@@ -10,7 +10,7 @@ $ go get github.com/DispatchMe/queue-copier
 
 ## Usage
 ```bash
-$ queue-copier
---queue1="<url for origin>" \
---queue2="<url for destination>"
+$ ./queue-copier
+-queue1="<url for origin>" \
+-queue2="<url for destination>"
 ```
