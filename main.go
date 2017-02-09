@@ -1,16 +1,28 @@
 package main
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/codegangsta/cli"
-	"log"
 	"os"
+
+	"github.com/DispatchMe/queue-copier/rabbit"
+	"github.com/DispatchMe/queue-copier/sqs"
+
+	"github.com/codegangsta/cli"
 )
 
 func main() {
 	app := cli.NewApp()
+	app.Name = "queue copier"
+	app.Usage = "Copy Messages from one queue to another"
 	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name: "mode",
+		},
+		cli.StringFlag{
+			Name: "dead-queue",
+		},
+		cli.StringFlag{
+			Name: "exchange",
+		},
 		cli.StringFlag{
 			Name: "queue1",
 		},
@@ -20,41 +32,13 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) {
-		client := sqs.New(&aws.Config{
-			Region: aws.String("us-east-1"),
-		})
-
-		for {
-			msgs, err := client.ReceiveMessage(&sqs.ReceiveMessageInput{
-				QueueUrl: aws.String(c.String("queue1")),
-			})
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			for _, msg := range msgs.Messages {
-				_, err = client.SendMessage(&sqs.SendMessageInput{
-					QueueUrl:    aws.String(c.String("queue2")),
-					MessageBody: msg.Body,
-				})
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				_, err = client.DeleteMessage(&sqs.DeleteMessageInput{
-					QueueUrl:      aws.String(c.String("queue1")),
-					ReceiptHandle: msg.ReceiptHandle,
-				})
-
-				if err != nil {
-					log.Fatal(err)
-				}
-				log.Println("Copied msg")
-			}
-
+		switch c.String("mode") {
+		case "rabbit":
+			rabbit.Republish(c.String("dead-queue"), c.String("exchange"))
+		case "sqs":
+			sqs.Copy(c.String("queue1"), c.String("queue2"))
 		}
 	}
 
 	app.Run(os.Args)
-
 }
