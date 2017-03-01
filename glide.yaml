@@ -1,0 +1,8 @@
+package: github.com/DispatchMe/queue-copier
+import:
+- package: github.com/aws/aws-sdk-go
+  subpackages:
+  - aws
+  - service/sqs
+- package: github.com/codegangsta/cli
+- package: github.com/streadway/amqp
