@@ -31,14 +31,18 @@ func Republish(deadQueue, exchange string) {
 			break
 		}
 
+		headers := msg.Headers
+		headers["x-retry-count"] = "0"
+
 		pub := amqp.Publishing{
-			Headers:         msg.Headers,
+			Headers:         headers,
 			ContentType:     msg.ContentType,
 			ContentEncoding: msg.ContentEncoding,
 			DeliveryMode:    msg.DeliveryMode,
 			Priority:        msg.Priority,
 			Expiration:      msg.Expiration,
 			Timestamp:       time.Now(),
+			Body:            msg.Body,
 		}
 
 		err = channel.Publish(exchange, msg.RoutingKey, false, false, pub)
