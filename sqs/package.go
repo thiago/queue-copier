@@ -2,6 +2,7 @@ package sqs
 
 import (
 	"log"
+	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -9,8 +10,12 @@ import (
 )
 
 func Copy(queue1, queue2 string) {
+	region := os.Getenv("AWS_REGION")
+	if region == "" {
+		region = "us-east-1"
+	}
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("us-east-1")},
+		Region: aws.String(region)},
 	)
 	if err != nil {
 		log.Fatal(err.Error())
